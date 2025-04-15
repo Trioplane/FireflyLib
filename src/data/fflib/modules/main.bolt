@@ -1,0 +1,54 @@
+function fflib:zinternals/load:
+    function fflib:zinternals/init/scoreboards
+    function fflib:zinternals/init/functions
+    function fflib:registry
+    execute if score .dev_mode fflib.vars matches 1 run tellraw @a [
+        {"text":"\n[","color":"gray"},
+        {"text":"Firefly","color":"yellow","bold":true},
+        {"text":"] ","color":"gray"},
+        {"text":"Reloaded. ","color":"green"},
+        {"text":"(toggle this off by turning off dev mode.)\n","color":"gray","italic":true},
+    ]
+
+function fflib:summon_particle:
+    $data modify storage fflib:zinternals summoning.data set from storage fflib:registry particles."$(id)"
+    data modify storage fflib:zinternals summoning.data.id set from storage fflib:in id
+    data modify storage fflib:zinternals summoning.data.args set from storage fflib:in args
+    
+    execute positioned ~ ~ ~ summon text_display run function fflib:zinternals/summon_particle/init_entity:
+        scoreboard players operation @s fflib.particle.lifetime = .lifetime fflib.in
+        data modify entity @s billboard set from storage fflib:zinternals summoning.data.texture.billboard
+        data modify entity @s data.fflib set from storage fflib:zinternals summoning.data
+        data modify entity @s background set value 0
+        data modify entity @s teleport_duration set value 1
+        data modify entity @s text set value {text:"",font:"fflib:fflib/square"}
+
+        tag @s add fflib.particle
+
+function fflib:zinternals/tick:
+    execute as @e[type=text_display,tag=fflib.particle] at @s run function fflib:zinternals/particle_step:
+        function fflib:zinternals/particle_step/run_next_function with entity @s data.fflib.functions[0]
+        function fflib:zinternals/particle_step/refill_functions with entity @s data.fflib
+
+        scoreboard players remove @s fflib.particle.lifetime 1
+
+        execute as @s[scores={fflib.particle.lifetime=0}] run function fflib:zinternals/particle_step/dispose_particle:
+            kill @s
+
+function fflib:zinternals/particle_step/run_next_function:
+    data modify storage fflib:zinternals running.function set from entity @s data.fflib.functions[0].name
+    data modify storage fflib:zinternals running.args set from entity @s data.fflib.functions[0].default_args
+    $data modify storage fflib:zinternals running.args merge from entity @s data.fflib.args."$(name)"
+
+    function fflib:zinternals/particle_step/run_next_function/run_function with storage fflib:zinternals running
+
+    data remove entity @s data.fflib.functions[0]
+
+    execute if data entity @s data.fflib.functions[0] run function fflib:zinternals/particle_step/run_next_function with entity @s data.fflib.functions[0]
+
+function fflib:zinternals/particle_step/run_next_function/run_function:
+    $function $(function) with storage fflib:zinternals running.args
+
+function fflib:zinternals/particle_step/refill_functions:
+    $data modify entity @s data.fflib.functions set from storage fflib:registry particles."$(id)".functions
+    

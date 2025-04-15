@@ -1,0 +1,41 @@
+function fflib:zinternals/init/functions:
+    scoreboard objectives add fflib.fflib.functions.grow.current_size dummy
+    scoreboard objectives add fflib.fflib.functions.grow.rate dummy
+    scoreboard objectives add fflib.fflib.functions.grow.initialized dummy
+
+function fflib:functions/grow:
+    execute unless score @s fflib.fflib.functions.grow.initialized matches 1:
+        execute store result score @s fflib.fflib.functions.grow.rate run data get storage fflib:zinternals running.args.rate 1000
+        execute store result score @s fflib.fflib.functions.grow.current_size run data get entity @s transformation.scale[0] 1000
+
+    scoreboard players set @s fflib.fflib.functions.grow.initialized 1
+
+    scoreboard players operation @s fflib.fflib.functions.grow.current_size += @s fflib.fflib.functions.grow.rate
+
+    data modify storage fflib:functions grow.size_to_apply set value [0f, 0f, 0f]
+    execute store result storage fflib:functions grow.size_to_apply[0] float 0.001 run scoreboard players get @s fflib.fflib.functions.grow.current_size
+    data modify storage fflib:functions grow.size_to_apply[1] set from storage fflib:functions grow.size_to_apply[0]
+    data modify storage fflib:functions grow.size_to_apply[2] set from storage fflib:functions grow.size_to_apply[0]
+
+    data modify entity @s transformation.scale set from storage fflib:functions grow.size_to_apply
+
+function fflib:functions/move_x:
+    $tp @s ~$(rate) ~ ~
+
+function fflib:functions/move_y:
+    $tp @s ~ ~$(rate) ~
+
+function fflib:functions/move_z:
+    $tp @s ~ ~ ~$(rate)
+
+function fflib:functions/move:
+    $tp @s ~$(x_rate) ~$(y_rate) ~$(z_rate)
+
+function fflib:functions/shoot_at:
+    $tp @s ^ ^ ^$(rate) facing $(facing)
+
+function fflib:functions/shoot_angle:
+    $tp @s ^ ^ ^$(rate) $(x_rot) $(y_rot)
+
+function fflib:functions/kill_when_inside_block:
+    execute unless block ~ ~ ~ #air run function fflib:zinternals/particle_step/dispose_particle

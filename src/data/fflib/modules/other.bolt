@@ -1,0 +1,6 @@
+function trplnr:particle_summon_test:
+    scoreboard players set .lifetime fflib.in 100
+    data modify storage fflib:in id set value "fflib:test"
+    execute as @e[type=marker,sort=random,limit=1] at @s run function fflib:summon_particle with storage fflib:in
+
+    data remove storage fflib:in args

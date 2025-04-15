@@ -1,0 +1,8 @@
+*.code-workspace
+*.venv
+*.beet_cache
+build/
+deno.lock
+modrinth.md
+smithed.md
+aseprite/

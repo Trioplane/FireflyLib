@@ -1,0 +1,4 @@
+function fflib:zinternals/init/scoreboards:
+    scoreboard objectives add fflib.particle.lifetime dummy
+    scoreboard objectives add fflib.in dummy
+    scoreboard objectives add fflib.vars dummy
